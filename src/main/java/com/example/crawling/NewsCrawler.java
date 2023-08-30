@@ -1,26 +1,28 @@
 package com.example.crawling;
 
-import com.beust.ah.A;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
-import java.util.stream.Collectors;
 
-@Service
+@Slf4j
+@Component
 @RequiredArgsConstructor
-public class NewsService {
+public class NewsCrawler {
 
     private final NewsRepository newsRepository;
 
     public void crawlNews() {
+
+        newsRepository.deleteAll();
+
         if (System.getProperty("os.name").toLowerCase().contains("mac"))
             System.setProperty("webdriver.chrome.driver", "./chromedriver-mac-arm64/chromedriver");
         else if (System.getProperty("os.name").toLowerCase().contains("win"))
@@ -53,23 +55,19 @@ public class NewsService {
             }
 
             WebElement photoClass = element.findElement(By.className("photo"));
-            if (photoClass != null)
-                photo = photoClass.findElement(By.tagName("img")).getAttribute("src");
+            if (photoClass != null) photo = photoClass.findElement(By.tagName("img")).getAttribute("src");
 
             WebElement writerClass = element.findElement(By.className("writing"));
-            if (writerClass != null)
-                writer = writerClass.getText();
+            if (writerClass != null) writer = writerClass.getText();
 
             News news = News.builder()
                     .title(title)
                     .writer(writer)
                     .link(link)
-                    .photo(photo)
-                    .build();
+                    .photo(photo).build();
             newsRepository.save(news);
             newsList.add(news);
+//            log.info(news.getTitle());
         }
-
-
     }
 }
